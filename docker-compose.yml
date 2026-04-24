@@ -1,14 +1,15 @@
 services:
   hardhat:
     build: ./blockchain
+    volumes:
+      - ./blockchain:/app
     ports:
       - "8545:8545"
-    # A simple healthcheck for the RPC server
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8545"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 5s
+      timeout: 2s
+      retries: 10
 
   oracle:
     build: ./oracle-service
@@ -42,15 +43,3 @@ services:
     depends_on:
       hardhat:
         condition: service_healthy
-
-  hardhat:
-    build: ./blockchain
-    volumes:
-      - ./blockchain:/app
-    ports:
-      - "8545:8545"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8545"]
-      interval: 5s
-      timeout: 2s
-      retries: 10

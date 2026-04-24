@@ -4,8 +4,6 @@ import SportsOracleABI from './abi/SportsOracle.json';
 import BettingMarketABI from './abi/BettingMarket.json';
 import './index.css';
 
-const BETTING_MARKET_ADDRESS = import.meta.env.VITE_BETTING_MARKET_ADDRESS || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
-
 function App() {
   const [account, setAccount] = useState('');
   const [contract, setContract] = useState(null);
