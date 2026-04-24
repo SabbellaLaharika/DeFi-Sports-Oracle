@@ -11,6 +11,10 @@ COPY . .
 # Compile contracts on build
 RUN npx hardhat compile
 
+# Make the start script executable
+RUN chmod +x start.sh
+
 EXPOSE 8545
 
-CMD ["npx", "hardhat", "node"]
+# Use the start script
+CMD ["./start.sh"]

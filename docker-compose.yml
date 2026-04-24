@@ -1,15 +1,14 @@
 services:
   hardhat:
     build: ./blockchain
-    volumes:
-      - ./blockchain:/app
     ports:
       - "8545:8545"
+    # A simple healthcheck for the RPC server
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8545"]
-      interval: 5s
-      timeout: 2s
-      retries: 10
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   oracle:
     build: ./oracle-service
@@ -17,29 +16,19 @@ services:
       - ./oracle-service/.env
     ports:
       - "3001:3001"
-    volumes:
-      - ./blockchain:/app/shared
     depends_on:
-      deployer:
-        condition: service_completed_successfully
+      hardhat:
+        condition: service_healthy
+    # Healthcheck to see if the oracle API is running
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build: ./frontend
     ports:
       - "5173:5173"
-    volumes:
-      - ./blockchain/deployed-addresses.json:/app/public/deployed-addresses.json
     depends_on:
-      deployer:
-        condition: service_completed_successfully
-
-  deployer:
-    build: ./blockchain
-    volumes:
-      - ./blockchain:/app
-    command: >
-      sh -c "npx hardhat run scripts/deploy.js --network localhost"
-    network_mode: "service:hardhat"
-    depends_on:
-      hardhat:
-        condition: service_healthy
+      - oracle
