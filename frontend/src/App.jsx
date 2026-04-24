@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import SportsOracleABI from './abi/SportsOracle.json';
 import BettingMarketABI from './abi/BettingMarket.json';
 import './index.css';
 
-const BETTING_MARKET_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Default Hardhat address
+const BETTING_MARKET_ADDRESS = import.meta.env.VITE_BETTING_MARKET_ADDRESS || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 function App() {
   const [account, setAccount] = useState('');
@@ -12,23 +12,36 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [betAmount, setBetAmount] = useState('0.01');
   const [predictedValue, setPredictedValue] = useState('10');
+  const [addresses, setAddresses] = useState({ BettingMarket: '' });
+
+  useEffect(() => {
+    // Fetch addresses dynamically from the shared file served by the frontend container
+    fetch('/deployed-addresses.json')
+      .then(res => res.json())
+      .then(data => {
+        setAddresses(data);
+        console.log("Loaded dynamic addresses:", data);
+      })
+      .catch(err => console.error("Could not load addresses.json:", err));
+  }, []);
 
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         setAccount(accounts[0]);
-        
+
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const bettingContract = new ethers.Contract(
-          BETTING_MARKET_ADDRESS,
+          addresses.BettingMarket,
           BettingMarketABI.abi,
           signer
         );
         setContract(bettingContract);
       } catch (error) {
         console.error("Connection error:", error);
+        alert("Failed to connect wallet.");
       }
     } else {
       alert("Please install MetaMask!");
@@ -37,7 +50,7 @@ function App() {
 
   const placeBet = async (matchId, playerId) => {
     if (!contract) return alert("Please connect wallet first");
-    
+
     setLoading(true);
     try {
       const tx = await contract.placeBet(matchId, playerId, predictedValue, {
@@ -63,8 +76,8 @@ function App() {
       <nav className="navbar">
         <div className="logo">DEFI SPORTS ORACLE</div>
         {!account ? (
-          <button 
-            className="connect-btn" 
+          <button
+            className="connect-btn"
             onClick={connectWallet}
             data-test-id="connect-wallet-button"
           >
@@ -93,24 +106,24 @@ function App() {
               <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                 Player: <strong>{market.player}</strong>
               </p>
-              
+
               <div className="bet-input-group">
                 <label>Predicted Points</label>
-                <input 
-                  type="number" 
-                  value={predictedValue} 
+                <input
+                  type="number"
+                  value={predictedValue}
                   onChange={(e) => setPredictedValue(e.target.value)}
                 />
                 <label>Wager (ETH)</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   step="0.01"
-                  value={betAmount} 
+                  value={betAmount}
                   onChange={(e) => setBetAmount(e.target.value)}
                 />
               </div>
 
-              <button 
+              <button
                 className="bet-btn"
                 onClick={() => placeBet(market.matchId, market.playerId)}
                 disabled={loading || !account}

@@ -17,6 +17,18 @@ async function main() {
   const bettingMarketAddress = await bettingMarket.getAddress();
   console.log(`BettingMarket deployed to: ${bettingMarketAddress}`);
 
+  // Export addresses for other services
+  const fs = require("fs");
+  const path = require("path");
+  const addresses = {
+    SportsOracle: oracleAddress,
+    BettingMarket: bettingMarketAddress
+  };
+  
+  const outputPath = path.join(__dirname, "../deployed-addresses.json");
+  fs.writeFileSync(outputPath, JSON.stringify(addresses, null, 2));
+  console.log("Addresses saved to:", outputPath);
+
   console.log("Deployment complete!");
 }
 

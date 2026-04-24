@@ -11,10 +11,26 @@ app.use(cors());
 const PORT = process.env.PORT || 3001;
 
 // Initialize Ethers.js
-const provider = new ethers.JsonRpcProvider(process.env.RPC_URL || 'http://localhost:8545');
-const wallet = new ethers.Wallet(process.env.ORACLE_PRIVATE_KEY, provider);
+const fs = require('fs');
+const path = require('path');
+
+const RPC_URL = process.env.RPC_URL || 'http://localhost:8545';
+const PRIVATE_KEY = process.env.ORACLE_PRIVATE_KEY;
+
+// Dynamic address resolution
+let sportsOracleAddress = process.env.SPORTS_ORACLE_ADDRESS || process.env.ORACLE_CONTRACT_ADDRESS;
+const sharedPath = path.join(__dirname, '../shared/deployed-addresses.json');
+
+if (fs.existsSync(sharedPath)) {
+  const sharedData = JSON.parse(fs.readFileSync(sharedPath, 'utf8'));
+  sportsOracleAddress = sharedData.SportsOracle;
+  console.log(`Loaded Oracle address from shared volume: ${sportsOracleAddress}`);
+}
+
+const provider = new ethers.JsonRpcProvider(RPC_URL);
+const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 const oracleContract = new ethers.Contract(
-  process.env.ORACLE_CONTRACT_ADDRESS,
+  sportsOracleAddress,
   SportsOracleABI,
   wallet
 );

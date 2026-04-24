@@ -1,37 +1,56 @@
-version: '3.8'
-
 services:
-  blockchain:
+  hardhat:
     build: ./blockchain
     ports:
       - "8545:8545"
-    networks:
-      - defi-network
+    # A simple healthcheck for the RPC server
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  oracle-service:
+  oracle:
     build: ./oracle-service
+    env_file:
+      - ./oracle-service/.env
     ports:
       - "3001:3001"
-    environment:
-      - RPC_URL=http://blockchain:8545
-      - ORACLE_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-      - ORACLE_CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+    volumes:
+      - ./blockchain:/app/shared
     depends_on:
-      - blockchain
-    networks:
-      - defi-network
+      deployer:
+        condition: service_completed_successfully
 
   frontend:
     build: ./frontend
     ports:
       - "5173:5173"
-    environment:
-      - VITE_BETTING_MARKET_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+    volumes:
+      - ./blockchain/deployed-addresses.json:/app/public/deployed-addresses.json
     depends_on:
-      - blockchain
-    networks:
-      - defi-network
+      deployer:
+        condition: service_completed_successfully
 
-networks:
-  defi-network:
-    driver: bridge
+  deployer:
+    build: ./blockchain
+    volumes:
+      - ./blockchain:/app
+    command: >
+      sh -c "npx hardhat run scripts/deploy.js --network localhost"
+    network_mode: "service:hardhat"
+    depends_on:
+      hardhat:
+        condition: service_healthy
+
+  hardhat:
+    build: ./blockchain
+    volumes:
+      - ./blockchain:/app
+    ports:
+      - "8545:8545"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
