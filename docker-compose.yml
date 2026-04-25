@@ -1,14 +1,16 @@
+
 services:
   hardhat:
     build: ./blockchain
     ports:
       - "8545:8545"
-    # A simple healthcheck for the RPC server
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8545"]
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - ./shared:/app/shared
 
   oracle:
     build: ./oracle-service
@@ -19,12 +21,13 @@ services:
     depends_on:
       hardhat:
         condition: service_healthy
-    # Healthcheck to see if the oracle API is running
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - ./shared:/app/shared
 
   frontend:
     build: ./frontend
@@ -32,3 +35,5 @@ services:
       - "5173:5173"
     depends_on:
       - oracle
+    volumes:
+      - ./shared:/app/public/shared

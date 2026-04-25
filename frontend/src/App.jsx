@@ -13,14 +13,16 @@ function App() {
   const [addresses, setAddresses] = useState({ BettingMarket: '' });
 
   useEffect(() => {
-    // Fetch addresses dynamically from the shared file served by the frontend container
-    fetch('/deployed-addresses.json')
-      .then(res => res.json())
-      .then(data => {
+    const fetchAddresses = async () => {
+      try {
+        const response = await fetch('/shared/deployed-addresses.json');
+        const data = await response.json();
         setAddresses(data);
-        console.log("Loaded dynamic addresses:", data);
-      })
-      .catch(err => console.error("Could not load addresses.json:", err));
+      } catch (error) {
+        console.error('Error fetching addresses:', error);
+      }
+    };
+    fetchAddresses();
   }, []);
 
   const connectWallet = async () => {
