@@ -35,8 +35,8 @@ graph TD
     Admin -->|POST /api/trigger-update| API
     Admin -->|POST /api/trigger-finalize| API
     API -->|Validate Types| Val
-    Val -->|submitPlayerData()| SO
-    Val -->|finalizeMatch()| SO
+    Val -->|submitPlayerData| SO
+    Val -->|finalizeMatch| SO
     OracleWallet -.->|Signs Transactions| SO
 
     %% Settlement
