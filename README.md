@@ -2,51 +2,59 @@
 
 A premium, containerized full-stack decentralized application (dApp) featuring a custom blockchain oracle system, smart-contract-based wagering, and an event-driven React frontend.
 
----
-
 ## 🗺️ System Architecture
 
 ```mermaid
-graph TD
-    subgraph Client Layer
-        Bettor[Bettor / User]
-        Admin[Oracle Admin]
-        UI[React dApp UI - Port 5173]
+graph LR
+    %% Define Node Styles
+    classDef clientStyle fill:#111827,stroke:#7000ff,stroke-width:1px,color:#fff,rx:8px,ry:8px;
+    classDef backendStyle fill:#111827,stroke:#00f2ff,stroke-width:1px,color:#fff,rx:8px,ry:8px;
+    classDef blockchainStyle fill:#111827,stroke:#00ff88,stroke-width:1px,color:#fff,rx:8px,ry:8px;
+    classDef sharedStyle fill:#1f2937,stroke:#9ca3af,stroke-width:1px,color:#fff,stroke-dasharray: 5 5,rx:8px,ry:8px;
+
+    subgraph client ["Client Layer (Vite React Frontend)"]
+        UI[Glassmorphic UI]
         Wallet[MetaMask Wallet]
-        Events[Ethers.js Event Listeners]
+        Listeners[Ethers Event Listeners]
     end
 
-    subgraph Oracle Layer
-        API[Node.js Express API - Port 3001]
-        Val[Strict Input Validation]
-        OracleWallet[Oracle Hot Wallet]
-    end
-
-    subgraph Smart Contract Layer [Hardhat Local - Port 8545]
+    subgraph blockchain ["Blockchain Layer (Hardhat Local Node)"]
         BM[BettingMarket.sol Contract]
         SO[SportsOracle.sol Contract]
     end
 
+    subgraph backend ["Backend Layer (Oracle Service)"]
+        API[Express API Endpoints]
+        Val[Strict Input Validation]
+    end
+
+    Shared["Shared Volume (deployed-addresses.json)"]
+
+    %% Assign classes
+    class UI,Wallet,Listeners clientStyle;
+    class API,Val backendStyle;
+    class SO,BM blockchainStyle;
+    class Shared sharedStyle;
+
     %% Client Interactions
-    Bettor -->|Connect| Wallet
-    Bettor -->|Place Bet / Send ETH| BM
-    
+    UI -->|1. Connects| Wallet
+    UI -->|2. Places Bet / Wager| BM
+    Wallet -->|3. Sends ETH & Signs Tx| BM
+
+    %% Contract Communication
+    BM -->|4. Queries Scores| SO
+
+    %% Event Handling
+    BM -.->|5. Emits Events| Listeners
+    Listeners -.->|6. Updates State| UI
+
     %% Oracle Interactions
-    Admin -->|POST /api/trigger-update| API
-    Admin -->|POST /api/trigger-finalize| API
-    API -->|Validate Types| Val
-    Val -->|submitPlayerData| SO
-    Val -->|finalizeMatch| SO
-    OracleWallet -.->|Signs Transactions| SO
+    API -->|7. Validates Input| Val
+    Val -->|8. Writes Stats & Finalizes| SO
 
-    %% Settlement
-    Bettor -->|Settle Bet| BM
-    BM -->|Verify Score & Status| SO
-    BM -->|Transfer Payout| Bettor
-
-    %% Event Updates
-    BM -.->|Emits BetPlaced & BetSettled| Events
-    Events -.->|React State Change| UI
+    %% Config Sharing
+    Shared -.->|9. Sync Address| UI
+    Shared -.->|10. Sync Address| API
 ```
 
 The application consists of three containerized services coordinated seamlessly:
