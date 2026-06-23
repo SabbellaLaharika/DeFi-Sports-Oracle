@@ -35,5 +35,10 @@ services:
       - "5173:5173"
     depends_on:
       - oracle
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - ./shared:/app/public/shared

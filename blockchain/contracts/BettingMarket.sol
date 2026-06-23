@@ -69,7 +69,8 @@ contract BettingMarket {
         if (won) {
             payout = bet.amount * 2;
             require(address(this).balance >= payout, "Insufficient contract balance for payout");
-            payable(bet.bettor).transfer(payout);
+            (bool success, ) = payable(bet.bettor).call{value: payout}("");
+            require(success, "Payout transfer failed");
         }
 
         bet.settled = true;

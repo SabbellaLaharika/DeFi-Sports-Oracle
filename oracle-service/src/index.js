@@ -35,6 +35,22 @@ const oracleContract = new ethers.Contract(
   wallet
 );
 
+function validateInteger(value, name) {
+  const num = Number(value);
+  if (
+    value === undefined || 
+    value === null || 
+    value === '' || 
+    Array.isArray(value) || 
+    typeof value === 'object' ||
+    !Number.isInteger(num) || 
+    num < 0
+  ) {
+    throw new Error(`Invalid ${name}: must be a non-negative integer`);
+  }
+  return num;
+}
+
 /**
  * Healthcheck endpoint for Docker
  */
@@ -49,13 +65,13 @@ app.get('/health', (req, res) => {
 app.post('/api/trigger-update', async (req, res) => {
   const { matchId, playerId, pointsScored } = req.body;
 
-  if (matchId === undefined || playerId === undefined || pointsScored === undefined) {
-    return res.status(400).json({ error: 'Missing required parameters' });
-  }
-
   try {
-    console.log(`Triggering update for Match ${matchId}, Player ${playerId}, Points ${pointsScored}`);
-    const tx = await oracleContract.submitPlayerData(matchId, playerId, pointsScored);
+    const validatedMatchId = validateInteger(matchId, 'matchId');
+    const validatedPlayerId = validateInteger(playerId, 'playerId');
+    const validatedPoints = validateInteger(pointsScored, 'pointsScored');
+
+    console.log(`Triggering update for Match ${validatedMatchId}, Player ${validatedPlayerId}, Points ${validatedPoints}`);
+    const tx = await oracleContract.submitPlayerData(validatedMatchId, validatedPlayerId, validatedPoints);
     const receipt = await tx.wait();
 
     res.status(200).json({
@@ -63,6 +79,9 @@ app.post('/api/trigger-update', async (req, res) => {
       transactionHash: receipt.hash
     });
   } catch (error) {
+    if (error.message && error.message.includes('Invalid')) {
+      return res.status(400).json({ error: error.message });
+    }
     console.error('Error submitting data:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
@@ -75,13 +94,12 @@ app.post('/api/trigger-update', async (req, res) => {
 app.post('/api/trigger-finalize', async (req, res) => {
   const { matchId, playerId } = req.body;
 
-  if (matchId === undefined || playerId === undefined) {
-    return res.status(400).json({ error: 'Missing required parameters' });
-  }
-
   try {
-    console.log(`Triggering finalization for Match ${matchId}, Player ${playerId}`);
-    const tx = await oracleContract.finalizeMatch(matchId, playerId);
+    const validatedMatchId = validateInteger(matchId, 'matchId');
+    const validatedPlayerId = validateInteger(playerId, 'playerId');
+
+    console.log(`Triggering finalization for Match ${validatedMatchId}, Player ${validatedPlayerId}`);
+    const tx = await oracleContract.finalizeMatch(validatedMatchId, validatedPlayerId);
     const receipt = await tx.wait();
 
     res.status(200).json({
@@ -89,6 +107,9 @@ app.post('/api/trigger-finalize', async (req, res) => {
       transactionHash: receipt.hash
     });
   } catch (error) {
+    if (error.message && error.message.includes('Invalid')) {
+      return res.status(400).json({ error: error.message });
+    }
     console.error('Error finalizing match:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }

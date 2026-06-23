@@ -178,3 +178,108 @@ body {
   padding: 0.5rem 1rem;
   border-radius: 10px;
 }
+
+/* Toast Notification Banner */
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6);
+  animation: slideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  max-width: 400px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast-notification.success {
+  background: rgba(0, 255, 136, 0.15);
+  border-color: var(--success);
+}
+
+.toast-notification.error {
+  background: rgba(255, 0, 85, 0.15);
+  border-color: var(--danger);
+}
+
+.toast-notification.warning {
+  background: rgba(255, 170, 0, 0.15);
+  border-color: #ffaa00;
+}
+
+.toast-notification.info {
+  background: rgba(0, 242, 255, 0.15);
+  border-color: var(--primary-accent);
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.toast-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.toast-notification.success .toast-icon { color: var(--success); }
+.toast-notification.error .toast-icon { color: var(--danger); }
+.toast-notification.warning .toast-icon { color: #ffaa00; }
+.toast-notification.info .toast-icon { color: var(--primary-accent); }
+
+.toast-message {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-left: 1rem;
+  transition: color 0.2s;
+}
+
+.toast-close:hover {
+  color: var(--text-primary);
+}
+
+/* Placed Bets Section styling */
+.bets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.bet-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.bet-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
