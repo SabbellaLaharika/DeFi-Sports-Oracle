@@ -70,8 +70,9 @@ app.post('/api/trigger-update', async (req, res) => {
     const validatedPlayerId = validateInteger(playerId, 'playerId');
     const validatedPoints = validateInteger(pointsScored, 'pointsScored');
 
-    console.log(`Triggering update for Match ${validatedMatchId}, Player ${validatedPlayerId}, Points ${validatedPoints}`);
-    const tx = await oracleContract.submitPlayerData(validatedMatchId, validatedPlayerId, validatedPoints);
+    const nonce = await provider.getTransactionCount(wallet.address);
+    console.log(`Triggering update for Match ${validatedMatchId}, Player ${validatedPlayerId}, Points ${validatedPoints} (nonce: ${nonce})`);
+    const tx = await oracleContract.submitPlayerData(validatedMatchId, validatedPlayerId, validatedPoints, { nonce });
     const receipt = await tx.wait();
 
     res.status(200).json({
@@ -98,8 +99,9 @@ app.post('/api/trigger-finalize', async (req, res) => {
     const validatedMatchId = validateInteger(matchId, 'matchId');
     const validatedPlayerId = validateInteger(playerId, 'playerId');
 
-    console.log(`Triggering finalization for Match ${validatedMatchId}, Player ${validatedPlayerId}`);
-    const tx = await oracleContract.finalizeMatch(validatedMatchId, validatedPlayerId);
+    const nonce = await provider.getTransactionCount(wallet.address);
+    console.log(`Triggering finalization for Match ${validatedMatchId}, Player ${validatedPlayerId} (nonce: ${nonce})`);
+    const tx = await oracleContract.finalizeMatch(validatedMatchId, validatedPlayerId, { nonce });
     const receipt = await tx.wait();
 
     res.status(200).json({

@@ -50,7 +50,7 @@ function App() {
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
-        const response = await fetch('/shared/deployed-addresses.json');
+        const response = await fetch(`/shared/deployed-addresses.json?t=${Date.now()}`);
         const data = await response.json();
         setAddresses(data);
       } catch (error) {
@@ -327,7 +327,7 @@ function App() {
                   </span>
                 </div>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '0.8rem' }}>
-                  Player: <strong>{market.player}</strong>
+                  Player: <strong>{market.player}</strong> <span style={{ fontSize: '0.8rem', color: '#9ca3af', marginLeft: '0.5rem', backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>(ID: {market.matchId}/{market.playerId})</span>
                 </p>
 
                 {/* Display Current Oracle Data */}
@@ -411,7 +411,6 @@ function App() {
                         width: '100%',
                         padding: '0.8rem',
                         borderRadius: '12px',
-                        border: 'none',
                         background: 'rgba(112, 0, 255, 0.2)',
                         color: '#b070ff',
                         border: '1px solid #7000ff',

@@ -17,6 +17,16 @@ async function main() {
   const bettingMarketAddress = await bettingMarket.getAddress();
   console.log("BettingMarket deployed to:", bettingMarketAddress);
 
+  // Pre-fund the BettingMarket contract so it has funds for payouts
+  const [deployer] = await hre.ethers.getSigners();
+  console.log("Funding BettingMarket contract with 10 ETH from deployer...");
+  const fundTx = await deployer.sendTransaction({
+    to: bettingMarketAddress,
+    value: hre.ethers.parseEther("10.0")
+  });
+  await fundTx.wait();
+  console.log("BettingMarket funded successfully!");
+
   // Write to a shared folder that is mounted in Docker
   // We use ../shared because the script runs from the blockchain/ directory
   const sharedDir = path.join(__dirname, "../shared");
